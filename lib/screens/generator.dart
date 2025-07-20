@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:upworkfiverrtools/screens/dashboard.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 
 class Generator extends StatefulWidget {
   const Generator({super.key});
@@ -57,6 +60,33 @@ class _DashboardPageState extends State<Generator> {
   }
 
   @override
+
+  Future<String> sendToOpenRouter(String input) async {
+    final url = Uri.parse('https://openrouter.ai/api/v1/chat/completions');
+
+    final headers = {
+      'Authorization': 'Bearer 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',
+      'Content-Type': 'application/json',
+      'HTTP-Referer': 'https://localhost:3000', // use localhost if testing
+      'X-Title': 'Prolancer', // optional
+    };
+
+    final body = jsonEncode({
+      'model': 'mistralai/mistral-small-3.2-24b-instruct:free',
+      'messages': [
+        {'role': 'user', 'content': input}
+      ],
+    });
+
+    final response = await http.post(url, headers: headers, body: body);
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['choices'][0]['message']['content'];
+    } else {
+      return 'Error: ${response.body}';
+    }
+  }
 
 
   Future<void> checkProfileDescription() async {
@@ -243,11 +273,19 @@ class _DashboardPageState extends State<Generator> {
                               ),
                               ElevatedButton(onPressed: () async {
                                 final userId2 = Supabase.instance.client.auth.currentUser!.id;
-                                await Supabase.instance.client
+                                final bandakidescription = await Supabase.instance.client
                                     .from('user_profiles')
-                                    .update({'profileDescription': description.text})
+                                    .select('profileDescription')
                                     .eq('id', userId2)
                                     .maybeSingle();
+                                  final reply = await sendToOpenRouter(
+                                      "You have to provide me with a persoanlised cover letter for the job proposal. My profile is $bandakidescription"
+                                  );
+                                   setState(() {
+                                     output.text = reply;
+                                   });// Or show in a Text widget
+
+
                               }, child: Text("Update"))
                             ],
                           ),
