@@ -203,16 +203,16 @@ class _DashboardPageState extends State<Generator> {
                           Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.pushReplacement(context,
-                                MaterialPageRoute(builder: (context) => DashboardPage()));
-                              },
-                              child: Text("Dashboard")),
+                                onPressed: () {
+                                  Navigator.pushReplacement(context,
+                                      MaterialPageRoute(builder: (context) => DashboardPage()));
+                                },
+                                child: Text("Dashboard")),
                           ),
                           Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: ElevatedButton(
-                                onPressed: () {}, child: Text("Generator"),style: ElevatedButton.styleFrom(
+                              onPressed: () {}, child: Text("Generator"),style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.orange,
                             ),),
                           ),
@@ -278,12 +278,12 @@ class _DashboardPageState extends State<Generator> {
                                     .select('profileDescription')
                                     .eq('id', userId2)
                                     .maybeSingle();
-                                  final reply = await sendToOpenRouter(
-                                      "You have to provide me with a persoanlised cover letter for the job proposal. My profile is $bandakidescription"
-                                  );
-                                   setState(() {
-                                     output.text = reply;
-                                   });// Or show in a Text widget
+                                final reply = await sendToOpenRouter(
+                                    "You have to provide me with a persoanlised cover letter for the job proposal. My profile is $bandakidescription"
+                                );
+                                setState(() {
+                                  output.text = reply;
+                                });// Or show in a Text widget
 
 
                               }, child: Text("Update"))

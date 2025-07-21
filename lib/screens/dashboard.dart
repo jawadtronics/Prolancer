@@ -27,6 +27,15 @@ class _DashboardPageState extends State<DashboardPage> {
     final userg = Supabase.instance.client.auth.currentUser;
     final avatarUrl = userg?.userMetadata?['avatar_url'];
 
+
+
+    // await Supabase.instance.client
+    //     .from('user_profiles')
+    //     .update({'profileDescription': 'Hello, this is my new description'})
+    //     .eq('id', userId)
+    //     .maybeSingle();
+
+
     if (userId != null) {
       try {
         final response = await Supabase.instance.client
@@ -45,6 +54,9 @@ class _DashboardPageState extends State<DashboardPage> {
       }
     }
   }
+
+  @override
+
 
   Future<void> checkProfileDescription() async {
     final userId = Supabase.instance.client.auth.currentUser?.id;
@@ -79,11 +91,16 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
+
+
   @override
   Widget build(BuildContext context) {
     final userEmail = Supabase.instance.client.auth.currentUser?.email;
     final user = Supabase.instance.client.auth.currentUser;
     final username = user?.userMetadata?['name'];
+
+
+
 
     return Scaffold(
       appBar: AppBar(
@@ -100,6 +117,7 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
         ),
         actions: [
+          // Profile Picture
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Builder(
@@ -115,6 +133,8 @@ class _DashboardPageState extends State<DashboardPage> {
               },
             ),
           ),
+
+          // Logout Button
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
@@ -152,22 +172,18 @@ class _DashboardPageState extends State<DashboardPage> {
                           Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: ElevatedButton(
-                              onPressed: () {},
-                              child: Text("Dashboard"),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.orange,
-                              ),
-                            ),
+                                onPressed: () {},
+                                child: Text("Dashboard"),style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange,
+                            ),),
                           ),
                           Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.pushReplacement(context,
-                                    MaterialPageRoute(builder: (context) => Generator()));
-                              },
-                              child: Text("Generator"),
-                            ),
+                                onPressed: () {
+                                  Navigator.pushReplacement(context,
+                                  MaterialPageRoute(builder: (context) => Generator()));
+                                }, child: Text("Generator")),
                           ),
                         ],
                       ),
@@ -212,29 +228,33 @@ class _DashboardPageState extends State<DashboardPage> {
                               ),
                               ElevatedButton(
                                 onPressed: () async {
-                                  final user = Supabase.instance.client.auth.currentUser;
-                                  if (user == null) return;
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
 
-                                  final userId = user.id;
+    final userId = user.id;
 
-                                  final response = await Supabase.instance.client
-                                      .from('user_profiles')
-                                      .select('credits')
-                                      .eq('id', userId)
-                                      .single();
+    // Fetch current credits
+    final response = await Supabase.instance.client
+        .from('user_profiles')
+        .select('credits')
+        .eq('id', userId)
+        .single();
 
-                                  final currentCredits = response['credits'] as int;
+    final currentCredits = response['credits'] as int;
 
-                                  await Supabase.instance.client
-                                      .from('user_profiles')
-                                      .update({'credits': currentCredits + 10})
-                                      .eq('id', userId);
+    // Update in Supabase
+    await Supabase.instance.client
+        .from('user_profiles')
+        .update({'credits': currentCredits + 10})
+        .eq('id', userId);
 
-                                  setState(() {
-                                    credits = currentCredits + 10;
-                                  });
+    // Update in frontend
+    setState(() {
+    credits = currentCredits + 10;
+    });
 
-                                  print('Credits increased to ${credits}');
+    print('Credits increased to ${credits}');
+
                                 },
                                 child: Text('Add 10 Credits'),
                               ),
@@ -266,53 +286,45 @@ class _DashboardPageState extends State<DashboardPage> {
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Column(
+                              // mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
                                   "Profile Description",
                                   style: TextStyle(
                                     fontWeight: FontWeight.w900,
                                     fontSize: 20,
+
                                   ),
                                   textAlign: TextAlign.left,
                                 ),
-                                SizedBox(height: 10),
-                                Container(
-                                  height: 150,
-                                  decoration: BoxDecoration(
-                                    border: Border.all(color: Colors.grey),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Scrollbar(
-                                    thumbVisibility: true,
+                                Scrollbar(
+                                  controller: scroll,
+                                  thumbVisibility: true,
+
+                                  child: SingleChildScrollView(
                                     controller: scroll,
-                                    child: SingleChildScrollView(
-                                      controller: scroll,
-                                      child: TextField(
-                                        controller: description,
-                                        maxLines: null,
-                                        decoration: InputDecoration(
-                                          contentPadding: EdgeInsets.all(10),
-                                          border: InputBorder.none,
-                                          hintText: 'Please Enter Your Profile Description Below',
-                                        ),
-                                        keyboardType: TextInputType.multiline,
+                                    scrollDirection: Axis.vertical,
+                                    child: TextField(
+                                      controller: description,
+                                      maxLines: null,
+                                      minLines: 4,
+                                      decoration: InputDecoration(
+                                        labelText: 'Please Enter Your Profile Description Below',
+
                                       ),
+
+
                                     ),
                                   ),
                                 ),
-                                SizedBox(height: 10),
-                                ElevatedButton(
-                                  onPressed: () async {
-                                    final userId2 =
-                                        Supabase.instance.client.auth.currentUser!.id;
-                                    await Supabase.instance.client
-                                        .from('user_profiles')
-                                        .update({'profileDescription': description.text})
-                                        .eq('id', userId2)
-                                        .maybeSingle();
-                                  },
-                                  child: Text("Update"),
-                                )
+                                ElevatedButton(onPressed: () async {
+                                  final userId2 = Supabase.instance.client.auth.currentUser!.id;
+                                  await Supabase.instance.client
+                                      .from('user_profiles')
+                                      .update({'profileDescription': description.text})
+                                      .eq('id', userId2)
+                                      .maybeSingle();
+                                }, child: Text("Update"))
                               ],
                             ),
                           ),
