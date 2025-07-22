@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:upworkfiverrtools/screens/dashboard.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:google_fonts/google_fonts.dart';
 
 
 class Generator extends StatefulWidget {
@@ -15,6 +16,16 @@ class Generator extends StatefulWidget {
 TextEditingController description = TextEditingController();
 TextEditingController output = TextEditingController();
 final ScrollController scroll = ScrollController();
+// Selected value
+String selectedValue = 'Cover Letter';
+
+// Dropdown options
+final List<String> dropdownItems = [
+  'Cover Letter',
+  'Cold Outreach Email',
+  'Follow-up Message',
+  'Custom Question',
+];
 
 class _DashboardPageState extends State<Generator> {
   int? credits;
@@ -177,20 +188,7 @@ class _DashboardPageState extends State<Generator> {
       body: Column(
         children: [
           Expanded(
-            flex: 1,
-            child: Center(
-              child: Container(
-                alignment: Alignment.centerLeft,
-                padding: const EdgeInsets.only(left: 30),
-                child: Text(
-                  "Welcome Back! $username",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 1,
+            flex: 3,
             child: Center(
               child: Row(
                 children: [
@@ -237,58 +235,94 @@ class _DashboardPageState extends State<Generator> {
                             ),
                           ],
                         ),
-                        child: Align(
-                          alignment: Alignment.center,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                "Job Description",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 20,
+                        child: Column(
+                          // mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Job Description",
+                              style: GoogleFonts.montserrat(
+                                fontSize: 30,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: -1,
+                              )
 
-                                ),
-                                textAlign: TextAlign.left,
-                              ),
-                              Scrollbar(
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Scrollbar(
                                 controller: scroll,
                                 thumbVisibility: true,
-
                                 child: SingleChildScrollView(
                                   controller: scroll,
                                   scrollDirection: Axis.vertical,
-                                  child: TextField(
-                                    controller: description,
-                                    maxLines: null,
-                                    minLines: 4,
-                                    decoration: InputDecoration(
-                                      labelText: 'Enter Job Description',
-
+                                  child: Container(
+                                    height: 150, // Adjust height based on desired visible lines
+                                    child: TextField(
+                                      controller: description,
+                                      expands: true,
+                                      maxLines: null,
+                                      minLines: null,
+                                      decoration: InputDecoration(
+                                        labelText: 'Enter Job Description 💼',
+                                        border: OutlineInputBorder(),
+                                      ),
+                                      keyboardType: TextInputType.multiline,
                                     ),
-
-
                                   ),
                                 ),
                               ),
-                              ElevatedButton(onPressed: () async {
-                                final userId2 = Supabase.instance.client.auth.currentUser!.id;
-                                final bandakidescription = await Supabase.instance.client
-                                    .from('user_profiles')
-                                    .select('profileDescription')
-                                    .eq('id', userId2)
-                                    .maybeSingle();
-                                final reply = await sendToOpenRouter(
-                                    "You have to provide me with a persoanlised cover letter for the job proposal. My profile is $bandakidescription"
-                                );
-                                setState(() {
-                                  output.text = reply;
-                                });// Or show in a Text widget
+                            ),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 5, left: 16),
+                                  child: Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text("Response Type", style: GoogleFonts.montserrat(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: -1,
+                                    ),),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: DropdownButtonFormField<String>(
+                                    value: selectedValue,
+                                    items: dropdownItems.map((String value) {
+                                      return DropdownMenuItem<String>(
+                                        value: value,
+                                        child: Text(value),
+                                      );
+                                    }).toList(),
+                                    decoration: InputDecoration(
+                                      labelText: 'Select an Option',
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(30)
+                                      ),
+                                    ),
+                                    onChanged: (newValue) {
+                                      setState(() {
+                                        selectedValue = newValue!;
+                                      });
+                                    },
+                                  ),
+                                ),
+                            ElevatedButton(onPressed: () async {
+                              final userId2 = Supabase.instance.client.auth.currentUser!.id;
+                              final bandakidescription = await Supabase.instance.client
+                                  .from('user_profiles')
+                                  .select('profileDescription')
+                                  .eq('id', userId2)
+                                  .maybeSingle();
+                              final reply = await sendToOpenRouter(
+                                  "You have to provide me with a persoanlised cover letter for the job proposal. My profile is $bandakidescription"
+                              );
+                              setState(() {
+                                output.text = reply;
+                              });// Or show in a Text widget
 
 
-                              }, child: Text("Update"))
-                            ],
-                          ),
+                            }, child: Text("Update"))
+                          ],
                         ),
                       ),
                     ),
@@ -326,23 +360,21 @@ class _DashboardPageState extends State<Generator> {
                                   ),
                                   textAlign: TextAlign.left,
                                 ),
-                                Scrollbar(
-                                  controller: scroll,
-                                  thumbVisibility: true,
-
-                                  child: SingleChildScrollView(
+                                SizedBox(
+                                  height: 150, // Fixed height for scrollable area
+                                  child: Scrollbar(
                                     controller: scroll,
-                                    scrollDirection: Axis.vertical,
-                                    child: TextField(
-                                      controller: output,
-                                      readOnly: true,
-                                      maxLines: null,
-                                      decoration: InputDecoration.collapsed(
-                                        hintText: 'Your Response Will Appear Here',
-
+                                    thumbVisibility: true,
+                                    child: SingleChildScrollView(
+                                      controller: scroll,
+                                      child: TextField(
+                                        controller: output,
+                                        readOnly: true,
+                                        maxLines: null,
+                                        decoration: InputDecoration.collapsed(
+                                          hintText: 'Your Response Will Be Here',
+                                        ),
                                       ),
-
-
                                     ),
                                   ),
                                 ),
@@ -358,10 +390,7 @@ class _DashboardPageState extends State<Generator> {
               ),
             ),
           ),
-          Expanded(
-            flex: 1,
-            child: Center(child: Container()),
-          )
+          Center(child: Container())
         ],
       ),
     );
